@@ -29,6 +29,10 @@ func (s BigInt) Compare(other Part) int {
 	}
 
 	switch o := other.(type) {
+	case Uint64:
+		biA := big.Int(s)
+		biAP := &biA
+		return biAP.Cmp(big.NewInt(int64(o)))
 	case BigInt:
 		biA := big.Int(s)
 		biB := big.Int(o)
