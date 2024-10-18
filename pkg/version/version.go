@@ -6,8 +6,6 @@ import (
 	"regexp"
 	"strings"
 
-	"golang.org/x/xerrors"
-
 	"github.com/rstudio/go-version/pkg/part"
 	"github.com/rstudio/go-version/pkg/prerelease"
 )
@@ -41,14 +39,14 @@ func init() {
 func Parse(v string) (Version, error) {
 	matches := versionRegex.FindStringSubmatch(v)
 	if matches == nil {
-		return Version{}, xerrors.Errorf("malformed version: %s", v)
+		return Version{}, fmt.Errorf("malformed version: %s", v)
 	}
 
 	var segments []part.Uint64
 	for _, str := range strings.Split(matches[1], ".") {
 		val, err := part.NewUint64(str)
 		if err != nil {
-			return Version{}, xerrors.Errorf("error parsing version: %w", err)
+			return Version{}, fmt.Errorf("error parsing version: %w", err)
 		}
 
 		segments = append(segments, val)
