@@ -7,7 +7,7 @@ import (
 
 	"github.com/urfave/cli/v2"
 
-	"github.com/aquasecurity/go-version/pkg/semver"
+	"github.com/rstudio/go-version/pkg/semver"
 )
 
 func main() {

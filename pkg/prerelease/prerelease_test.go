@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aquasecurity/go-version/pkg/part"
+	"github.com/rstudio/go-version/pkg/part"
 )
 
 func TestCompare(t *testing.T) {

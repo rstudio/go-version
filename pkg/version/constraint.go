@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-
-	"golang.org/x/xerrors"
 )
 
 var (
@@ -36,15 +34,21 @@ func init() {
 		ops = append(ops, regexp.QuoteMeta(k))
 	}
 
-	constraintRegexp = regexp.MustCompile(fmt.Sprintf(
-		`(%s)\s*(%s)`,
-		strings.Join(ops, "|"),
-		regex))
+	constraintRegexp = regexp.MustCompile(
+		fmt.Sprintf(
+			`(%s)\s*(%s)`,
+			strings.Join(ops, "|"),
+			regex,
+		),
+	)
 
-	validConstraintRegexp = regexp.MustCompile(fmt.Sprintf(
-		`^\s*(\s*(%s)\s*(%s)\s*\,?)*\s*$`,
-		strings.Join(ops, "|"),
-		regex))
+	validConstraintRegexp = regexp.MustCompile(
+		fmt.Sprintf(
+			`^\s*(\s*(%s)\s*(%s)\s*\,?)*\s*$`,
+			strings.Join(ops, "|"),
+			regex,
+		),
+	)
 }
 
 // Constraints is one or more constraint that a version can be checked against.
@@ -64,7 +68,7 @@ func NewConstraints(v string) (Constraints, error) {
 	for _, vv := range strings.Split(v, "||") {
 		// Validate the segment
 		if !validConstraintRegexp.MatchString(vv) {
-			return Constraints{}, xerrors.Errorf("improper constraint: %s", vv)
+			return Constraints{}, fmt.Errorf("improper constraint: %s", vv)
 		}
 
 		ss := constraintRegexp.FindAllString(vv, -1)
@@ -92,12 +96,12 @@ func NewConstraints(v string) (Constraints, error) {
 func newConstraint(c string) (constraint, error) {
 	m := constraintRegexp.FindStringSubmatch(c)
 	if m == nil {
-		return constraint{}, xerrors.Errorf("improper constraint: %s", c)
+		return constraint{}, fmt.Errorf("improper constraint: %s", c)
 	}
 
 	v, err := Parse(m[2])
 	if err != nil {
-		return constraint{}, xerrors.Errorf("version parse error (%s): %w", m[2], err)
+		return constraint{}, fmt.Errorf("version parse error (%s): %w", m[2], err)
 	}
 
 	return constraint{

@@ -5,9 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"golang.org/x/xerrors"
-
-	"github.com/aquasecurity/go-version/pkg/part"
+	"github.com/rstudio/go-version/pkg/part"
 )
 
 const cvRegex string = `v?([0-9|x|X|\*]+)(\.[0-9|x|X|\*]+)?(\.[0-9|x|X|\*]+)?` +
@@ -41,15 +39,21 @@ func init() {
 		ops = append(ops, regexp.QuoteMeta(k))
 	}
 
-	constraintRegexp = regexp.MustCompile(fmt.Sprintf(
-		`(%s)\s*(%s)`,
-		strings.Join(ops, "|"),
-		cvRegex))
+	constraintRegexp = regexp.MustCompile(
+		fmt.Sprintf(
+			`(%s)\s*(%s)`,
+			strings.Join(ops, "|"),
+			cvRegex,
+		),
+	)
 
-	validConstraintRegexp = regexp.MustCompile(fmt.Sprintf(
-		`^\s*(\s*(%s)\s*(%s)\s*\,?)*\s*$`,
-		strings.Join(ops, "|"),
-		cvRegex))
+	validConstraintRegexp = regexp.MustCompile(
+		fmt.Sprintf(
+			`^\s*(\s*(%s)\s*(%s)\s*\,?)*\s*$`,
+			strings.Join(ops, "|"),
+			cvRegex,
+		),
+	)
 }
 
 type Constraints struct {
@@ -78,7 +82,7 @@ func NewConstraints(v string, opts ...ConstraintOption) (Constraints, error) {
 	for _, vv := range strings.Split(v, "||") {
 		// Validate the segment
 		if !validConstraintRegexp.MatchString(vv) {
-			return Constraints{}, xerrors.Errorf("improper constraint: %s", vv)
+			return Constraints{}, fmt.Errorf("improper constraint: %s", vv)
 		}
 
 		ss := constraintRegexp.FindAllString(vv, -1)
@@ -119,7 +123,7 @@ func newConstraint(c string, conf conf) (constraint, error) {
 
 	m := constraintRegexp.FindStringSubmatch(c)
 	if m == nil {
-		return constraint{}, xerrors.Errorf("improper constraint: %s", c)
+		return constraint{}, fmt.Errorf("improper constraint: %s", c)
 	}
 
 	major := m[3]

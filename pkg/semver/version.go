@@ -8,8 +8,8 @@ import (
 
 	"golang.org/x/xerrors"
 
-	"github.com/aquasecurity/go-version/pkg/part"
-	"github.com/aquasecurity/go-version/pkg/prerelease"
+	"github.com/rstudio/go-version/pkg/part"
+	"github.com/rstudio/go-version/pkg/prerelease"
 )
 
 var (
