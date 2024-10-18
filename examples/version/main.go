@@ -5,7 +5,7 @@ import (
 	"log"
 	"sort"
 
-	"github.com/aquasecurity/go-version/pkg/version"
+	"github.com/rstudio/go-version/pkg/version"
 )
 
 func main() {

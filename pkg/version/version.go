@@ -6,10 +6,8 @@ import (
 	"regexp"
 	"strings"
 
-	"golang.org/x/xerrors"
-
-	"github.com/aquasecurity/go-version/pkg/part"
-	"github.com/aquasecurity/go-version/pkg/prerelease"
+	"github.com/rstudio/go-version/pkg/part"
+	"github.com/rstudio/go-version/pkg/prerelease"
 )
 
 // The compiled regular expression used to test the validity of a version.
@@ -41,14 +39,14 @@ func init() {
 func Parse(v string) (Version, error) {
 	matches := versionRegex.FindStringSubmatch(v)
 	if matches == nil {
-		return Version{}, xerrors.Errorf("malformed version: %s", v)
+		return Version{}, fmt.Errorf("malformed version: %s", v)
 	}
 
 	var segments []part.Uint64
 	for _, str := range strings.Split(matches[1], ".") {
 		val, err := part.NewUint64(str)
 		if err != nil {
-			return Version{}, xerrors.Errorf("error parsing version: %w", err)
+			return Version{}, fmt.Errorf("error parsing version: %w", err)
 		}
 
 		segments = append(segments, val)
@@ -143,6 +141,8 @@ func (v Version) Original() string {
 // It works like Gem::Version.bump()
 // https://docs.ruby-lang.org/en/2.6.0/Gem/Version.html#method-i-bump
 func (v Version) PessimisticBump() Version {
+	v = v.copy()
+
 	size := len(v.segments)
 	if size == 1 {
 		v.segments[0] += 1
@@ -161,6 +161,8 @@ func (v Version) PessimisticBump() Version {
 // TildeBump returns the maximum version of "~"
 // https://docs.npmjs.com/cli/v6/using-npm/semver#tilde-ranges-123-12-1
 func (v Version) TildeBump() Version {
+	v = v.copy()
+
 	if len(v.segments) == 2 {
 		v.segments[1] += 1
 		return v
@@ -172,6 +174,8 @@ func (v Version) TildeBump() Version {
 // CaretBump returns the maximum version of "^"
 // https://docs.npmjs.com/cli/v6/using-npm/semver#caret-ranges-123-025-004
 func (v Version) CaretBump() Version {
+	v = v.copy()
+
 	found := -1
 	for i, s := range v.segments {
 		if s != 0 {
@@ -196,4 +200,16 @@ func (v Version) CaretBump() Version {
 	v.buildMetadata = ""
 
 	return v
+}
+
+func (v Version) copy() Version {
+	segments := make([]part.Uint64, len(v.segments))
+	copy(segments, v.segments)
+
+	return Version{
+		segments:      segments,
+		preRelease:    v.preRelease,
+		buildMetadata: v.buildMetadata,
+		original:      v.original,
+	}
 }

@@ -1,7 +1,7 @@
 package part
 
 import (
-	"golang.org/x/xerrors"
+	"errors"
 )
 
 type Any bool
@@ -10,7 +10,7 @@ func NewAny(s string) (Any, error) {
 	if s == "*" || s == "x" || s == "X" {
 		return true, nil
 	}
-	return true, xerrors.New("not wildcard")
+	return true, errors.New("not wildcard")
 }
 
 func (s Any) Compare(other Part) int {

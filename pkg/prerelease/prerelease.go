@@ -3,7 +3,7 @@ package prerelease
 import (
 	"reflect"
 
-	"github.com/aquasecurity/go-version/pkg/part"
+	"github.com/rstudio/go-version/pkg/part"
 )
 
 func Compare(p1, p2 part.Parts) int {
