@@ -53,18 +53,19 @@ func init() {
 
 // Constraints is one or more constraint that a version can be checked against.
 type Constraints struct {
-	constraints [][]constraint
+	constraints [][]Constraint
 }
 
-type constraint struct {
-	version  Version
-	operator operatorFunc
-	original string
+type Constraint struct {
+	version      Version
+	operator     string
+	operatorFunc operatorFunc
+	original     string
 }
 
 // NewConstraints parses a given constraint and returns a new instance of Constraints
 func NewConstraints(v string) (Constraints, error) {
-	var css [][]constraint
+	var css [][]Constraint
 	for _, vv := range strings.Split(v, "||") {
 		// Validate the segment
 		if !validConstraintRegexp.MatchString(vv) {
@@ -76,7 +77,7 @@ func NewConstraints(v string) (Constraints, error) {
 			ss = append(ss, strings.TrimSpace(vv))
 		}
 
-		var cs []constraint
+		var cs []Constraint
 		for _, single := range ss {
 			c, err := newConstraint(single)
 			if err != nil {
@@ -93,30 +94,43 @@ func NewConstraints(v string) (Constraints, error) {
 
 }
 
-func newConstraint(c string) (constraint, error) {
+func newConstraint(c string) (Constraint, error) {
 	m := constraintRegexp.FindStringSubmatch(c)
 	if m == nil {
-		return constraint{}, fmt.Errorf("improper constraint: %s", c)
+		return Constraint{}, fmt.Errorf("improper constraint: %s", c)
 	}
 
 	v, err := Parse(m[2])
 	if err != nil {
-		return constraint{}, fmt.Errorf("version parse error (%s): %w", m[2], err)
+		return Constraint{}, fmt.Errorf("version parse error (%s): %w", m[2], err)
 	}
 
-	return constraint{
-		version:  v,
-		operator: constraintOperators[m[1]],
-		original: c,
+	return Constraint{
+		version:      v,
+		operator:     m[1],
+		operatorFunc: constraintOperators[m[1]],
+		original:     c,
 	}, nil
 }
 
-func (c constraint) check(v Version) bool {
-	return c.operator(v, c.version)
+func (c Constraint) check(v Version) bool {
+	return c.operatorFunc(v, c.version)
 }
 
-func (c constraint) String() string {
+func (c Constraint) String() string {
 	return c.original
+}
+
+func (c Constraint) Version() string {
+	return c.version.String()
+}
+
+func (c Constraint) Operator() string {
+	return c.operator
+}
+
+func (cs Constraints) List() [][]Constraint {
+	return cs.constraints
 }
 
 // Check tests if a version satisfies all the constraints.
@@ -144,7 +158,7 @@ func (cs Constraints) String() string {
 	return strings.Join(csStr, "||")
 }
 
-func andCheck(v Version, constraints []constraint) bool {
+func andCheck(v Version, constraints []Constraint) bool {
 	for _, c := range constraints {
 		if !c.check(v) {
 			return false
